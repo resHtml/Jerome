@@ -31,11 +31,36 @@ The third objective is to practice our usage of **Docker**. All the components o
 
 ### Acceptance criteria
 
-* You have a GitHub repo with everything needed to build the Docker image.
+* OK You have a GitHub repo with everything needed to build the Docker image.
+
 * You can do a demo, where you build the image, run a container and access content from a browser.
+
+  ```sh
+  vim Dockerfile
+  # FROM php:7.2-apache
+  # COPY src/ /var/www/html/
+  docker build -t my-php-app .
+  docker run -d -p 9090:80 --name my-running-app my-php-app
+  docker inspect my-running-app
+  # http://localhost:9090/
+  ```
+
 * You have used a nice looking web template, different from the one shown in the webcast.
+
+  ```sh
+  docker exec -it my-running-app /bin/bash
+  echo "coucou" >index.html
+  # http://localhost:9090/
+  ```
+
+  
+
 * You are able to explain what you do in the Dockerfile.
+
 * You are able to show where the apache config files are located (in a running container).
+
+  dans /etc/apache2/sites-available# more 000-default.conf pour changer la racine. et dans var il y a le contenu
+
 * You have **documented** your configuration in your report.
 
 ## Step 2: Dynamic HTTP server with express.js
