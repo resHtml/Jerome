@@ -92,13 +92,33 @@ The third objective is to practice our usage of **Docker**. All the components o
 ### Acceptance criteria
 
 * You have a GitHub repo with everything needed to build the Docker image for the container.
+
 * You can do a demo, where you start from an "empty" Docker environment (no container running) and where you start 3 containers: static server, dynamic server and reverse proxy; in the demo, you prove that the routing is done correctly by the reverse proxy.
+
 * You can explain and prove that the static and dynamic servers cannot be reached directly (reverse proxy is a single entry point in the infra). 
+
 * You are able to explain why the static configuration is fragile and needs to be improved.
+
+  Because the IP address are hardcoded in the reverse proxy. and they can change when we do a new startup. 
+
 * You have **documented** your configuration in your report.
 
+### configuration 
 
-## Step 4: AJAX requests with JQuery
+In the reverse proxy we create a configuration file for our reverse proxy for the static and dynamique page. We can find the configuration file in `/etc/apache2/sites-available`. 
+
+```sh
+a2enmod proxy
+a2enmod proxy_http
+a2ensite 001-*
+service apache2 reload
+service apache2 restart
+```
+
+
+
+
+##  Step 4: AJAX requests with JQuery
 
 ### Webcasts
 
