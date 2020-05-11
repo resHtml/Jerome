@@ -127,10 +127,31 @@ service apache2 restart
 ### Acceptance criteria
 
 * You have a GitHub repo with everything needed to build the various images.
+
 * You can do a complete, end-to-end demonstration: the web page is dynamically updated every few seconds (with the data coming from the dynamic backend).
+
 * You are able to prove that AJAX requests are sent by the browser and you can show the content of th responses.
+
+  Network part of browser inspect page 
+
 * You are able to explain why your demo would not work without a reverse proxy (because of a security restriction).
+
+  because it's the reverse proxy that route the request from the browser to a dynamic or static 
+
 * You have **documented** your configuration in your report.
+
+To execute some javascript in index.html, we must include it at the end of the file with the path of the javascript.The script is build as follow: 
+
+```js
+$(function(){
+    // declare function
+    	// use module getJSON
+    // function call 
+    // setInterval(function, MS); for a call every MS
+});
+```
+
+
 
 ## Step 5: Dynamic reverse proxy configuration
 
@@ -143,6 +164,13 @@ service apache2 restart
 * [Labo HTTP (5e): configuration dynamique du reverse proxy](https://www.youtube.com/watch?v=dz6GLoGou9k)
 
 ### Acceptance criteria
+
+```sh
+# add environnement variable to docker image 
+ docker run -e HELLO=world -e RES=heig -it res/apache_rp /bin/bash
+```
+
+
 
 * You have a GitHub repo with everything needed to build the various images.
 * You have found a way to replace the static configuration of the reverse proxy (hard-coded IP adresses) with a dynamic configuration.
