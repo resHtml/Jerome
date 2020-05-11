@@ -3,7 +3,7 @@ var chance = new Chance();
 var express = require('express');
 var app = express();
 
-app.get ('/test', function(req,res){
+app.get ('/api/dynamic', function(req,res){
 	res.send(generateStudents());
 });
 

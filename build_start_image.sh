@@ -1,4 +1,6 @@
 #!/bin/bash
+docker kill rp static express
+docker rm `docker ps -qa` 
 docker build -t res/apache_rp ./apache-reverse-proxy 
 docker build -t res/apache_static ./apache-php    
 docker build -t res/express ./express-images
