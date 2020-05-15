@@ -193,6 +193,10 @@ The goal is to :
 * You prove that the **load balancer** can distribute HTTP requests between these nodes.
 * You have **documented** your configuration and your validation procedure in your report.
 
+To execute the load balancing byrequest on apache. To do that, i have enable the following modules **lbmethod_byrequests and proxy_balancer**. The infrastructure will be made of 2 statics servers and 2 dynamics servers. First with my building script I run these 4 servers and i catch the 4 Ip adress in environnement variables. And I give these varaiables when i run the reverse proxy container. 
+
+In the template for configuration of the reverse proxy, I have made the modifications that was given on https://httpd.apache.org/docs/2.4/mod/mod_proxy_balancer.html . 
+
 ### Load balancing: round-robin vs sticky sessions (0.5 pt)
 
 * You do a setup to demonstrate the notion of sticky session.
