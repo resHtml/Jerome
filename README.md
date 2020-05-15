@@ -168,9 +168,14 @@ $(function(){
 ```sh
 # add environnement variable to docker image 
  docker run -e HELLO=world -e RES=heig -it res/apache_rp /bin/bash
+# overwrite a script call by docker file in the image to use environnement variable 
 ```
 
+The goal is to :
 
+1. run the two docker for static and dynamic
+2. get there adress by using a script and put it a environnement variable 
+3. run the php script and redirect the output in config file 
 
 * You have a GitHub repo with everything needed to build the various images.
 * You have found a way to replace the static configuration of the reverse proxy (hard-coded IP adresses) with a dynamic configuration.
