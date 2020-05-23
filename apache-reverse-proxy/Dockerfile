@@ -7,7 +7,7 @@ COPY apache2-foreground /usr/local/bin/
 COPY templates /var/apache2/templates
 COPY conf/ /etc/apache2
 
-RUN a2enmod proxy proxy_http lbmethod_byrequests proxy_balancer status
+RUN a2enmod proxy proxy_http lbmethod_byrequests proxy_balancer status lbmethod_byrequests headers
 RUN a2ensite 000-* 001-*
 
 
