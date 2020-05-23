@@ -18,10 +18,14 @@
 		BalancerMember 'http://<?php print "$ipDynamic2"?>' route=2
 	</Proxy>
 	
-	<Location '/balancer-manager'>
-		SetHandler balancer-manager
-		Require host demo.res.ch
-	</Location>
+<Location '/balancer-manager'>
+    ProxyPass !
+    
+    SetHandler balancer-manager
+    # Require host demo.res.ch
+    # Order Deny,Allow
+    # Allow from all
+  </Location>
 
 	ProxyPass '/api/dynamic/' 'balancer://dynamic/api/dynamic/'
 	ProxyPassReverse '/api/dynamic/' 'balancer://dynamic/api/dynamic/'

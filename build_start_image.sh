@@ -2,14 +2,15 @@
 docker kill rp static1 static2 express1 express2
 docker rm `docker ps -qa` 
 docker build -t res/apache_rp ./apache-reverse-proxy 
-docker build -t res/apache_static ./apache-php    
+docker build -t res/apache_static-s1 ./apache-static-S1   
+docker build -t res/apache_static-s2 ./apache-static-S2   
 docker build -t res/express ./express-images
 
-docker run -d --name static1 res/apache_static
+docker run -d --name static1 res/apache_static-s1
 export STATIC_APP1=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' static1)":80"
 echo "ip_static1: $STATIC_APP1"
 
-docker run -d --name static2 res/apache_static
+docker run -d --name static2 res/apache_static-s2
 export STATIC_APP2=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' static2)":80"
 echo "ip_static2: $STATIC_APP2"
 
