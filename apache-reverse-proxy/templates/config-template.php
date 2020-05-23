@@ -32,7 +32,13 @@
 	ProxyPass '/api/dynamic/' 'balancer://dynamic/api/dynamic/'
 	ProxyPassReverse '/api/dynamic/' 'balancer://dynamic/api/dynamic/'
 
+	ProxyPass '/api/docker/' 'balancer://dynamic/api/docker/'
+	ProxyPassReverse '/api/docker/' 'balancer://dynamic/api/docker/'
+	ProxyPass '/api/docker/(.*)'  'http://172.17.0.3:3000/aynamic/$1'
+	ProxyPassReverse '/api/dynamic/(.*)' 'balancer://dynamic/api/dpi/dynamic/$1'
+ 
 	ProxyPass '/' 'balancer://static/'
 	ProxyPassReverse '/' 'balancer://static/'
  
+
 </VirtualHost>
