@@ -12,7 +12,7 @@ var docker = new Docker({
 //var socket = process.env.DOCKER_SOCKET || '/var/run/docker.sock';
 //var docker = new Docker({socketPath: socket });
 app.get ('/api/dynamic', function(req,res){
-	res.send(generateStudents());
+	res.send(generateDockerNames());
 });
 app.get('/api/docker/', function (req, res) {
 	res.append('Access-Control-Allow-Origin', '*')
@@ -52,44 +52,29 @@ app.listen (3000, function(){
 	console.log("accepting request on port 3000");
 });
 
-function generateStudents(){
-	var numberOfStudents = chance.integer({
+function generateDockerNames(){
+	var numberOfDockers = chance.integer({
 		min: 0,
 		max: 10	
 	});
-	console.log(numberOfStudents);
-	var students = [];
-	for(var i = 0; i < numberOfStudents; i++){
-		var gender = chance.gender();
-		var birthYear = chance.year({
-			min: 1986,
-			max: 1996
+	var dockers = [];
+	for(var i = 0; i < numberOfDockers; i++){
+		var containerid = chance.hash({length :12});
+		var created = chance.integer({
+			min: 1,
+			max: 30
 		});
-		students.push({
-			firstName: chance.first({
-				gender: gender
-			}),
-			lastName: chance.last(),
-			gender: gender,
-			birthday: chance.birthday({
-				year: birthYear
-			})
+		created += " days ago"
+		var name = chance.word({syllables:2})+"-"+ chance.word({syllables:2})
+		dockers.push({
+			id:containerid,
+			created:created,
+			dockername:name
 		});
 	};
-	console.log(students);
-	return students;
+	return dockers;
 }
 
-
-
-
-
-
-
-
-
-
-  
   function oneContainer(container){
   	ip = null
   	if(container.State==="running")
