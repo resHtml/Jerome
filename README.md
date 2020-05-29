@@ -25,25 +25,23 @@ echo "coucou" >index.html
 
 * Le fichier de configuration se trouve dans  /etc/apache2/sites-available  **000-default.conf** pour changer la racine. Et dans var il y a la page web statique **index.html**. 
 
-![](/home/jerome/HEIG/Labo/RES/Teaching-HEIGVD-RES-2020-Labo-HTTPInfra/img/task1.png)
+![](./img/task1.png)
 
 ## Step 2: Dynamic HTTP server with express.js
 
-### Acceptance criteria
+Le but de cette partie est de générer dynamiquement toute les secondes des valeurs aléatoires. Pour cela nous avons utilisé **express.js** car comme nous étions novice dans le domaine, nous avons préféré rester avec l'outil montrer pas le professeur. Nous n'avons pas eut à changer beaucoup la configuration montrée dans les webcast. si ce n'est qu'on à la manière de docker un hash , avec le nombre jours depuis la création de ce docker, et son nom aléatoire. 
+
+![](./img/task2.png)
 
 * You can do a demo, where you build the image, run a container and access content from a browser.
-* You generate dynamic, random content and return a JSON payload to the client.
-* You don't have to use express.js; if you want, you can use another JavaScript web framework or event another language.
-
 
 ## Step 3: Reverse proxy with apache (static configuration)
 
+Dans cette étape, nous devions mettre en place un reverse proxy pour la partie statique et dynamique. Nous avons utilisé la même image que celle du serveur statique. Contrairement aux personnes qui utilisent des systèmes d'exploitation propriétaires, le reverse proxy n'est pas le seul point d'entrée pour nos containers. Cela vient du fait que notre système fait office d'hôte pour les containers et il n'a pas besoin d'une machine virtuelle. Par contre si on installait notre configuration sur un raspberry pi se trouvant sur notre réseau domestique et qu'on tentait d'y accéder depuis un ordinateur se trouvant sur le même réseau, ce serait le seul point d'entrée. 
 
-### Acceptance criteria
+Pour faire fonctionner notre RP, nous avons activer les modules proxy et proxy_http et nous les avons activés. Puis dans le script  **apache2-foreground** nous créons dynamiquement la configuration du serveur avec les adresses passées en paramètres avec les variables d'environnement. 
 
 * You can do a demo, where you start from an "empty" Docker environment (no container running) and where you start 3 containers: static server, dynamic server and reverse proxy; in the demo, you prove that the routing is done correctly by the reverse proxy.
-
-* You can explain and prove that the static and dynamic servers cannot be reached directly (reverse proxy is a single entry point in the infra). 
 
 * You are able to explain why the static configuration is fragile and needs to be improved.
 
@@ -114,9 +112,7 @@ The goal is to :
 * You are able to do an end-to-end demo with a well-prepared scenario. Make sure that you can demonstrate that everything works fine when the IP addresses change!
 * You are able to explain how you have implemented the solution and walk us through the configuration and the code.
 
-## Additional steps to get extra points on top of the "base" grade
-
-### Load balancing: multiple server nodes (0.5pt)
+## Load balancing: multiple server nodes (0.5pt)
 
 * You show that you can have **multiple static server nodes** and **multiple dynamic server nodes**. 
 * You prove that the **load balancer** can distribute HTTP requests between these nodes.
@@ -125,13 +121,13 @@ To execute the load balancing byrequest on apache. To do that, i have enable the
 
 In the template for configuration of the reverse proxy, I have made the modifications that was given on https://httpd.apache.org/docs/2.4/mod/mod_proxy_balancer.html . 
 
-### Load balancing: round-robin vs sticky sessions (0.5 pt)
+## Load balancing: round-robin vs sticky sessions (0.5 pt)
 
 * You do a setup to demonstrate the notion of sticky session.
 * You prove that your load balancer can distribute HTTP requests in a round-robin fashion to the dynamic server nodes (because there is no state).
 * You prove that your load balancer can handle sticky sessions when forwarding HTTP requests to the static server nodes.
 
-### Management UI (0.5 pt)
+## Management UI (0.5 pt)
 
 * You develop a web app (e.g. with express.js) that administrators can use to monitor and update your web infrastructure.
 * You find a way to control your Docker environment (list containers, start/stop containers, etc.) from the web app. For instance, you use the Dockerode npm module (or another Docker client library, in any of the supported languages).
