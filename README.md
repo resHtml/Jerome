@@ -5,10 +5,10 @@
 
 ## Step 1: Static HTTP server with apache httpd
 
-Le but de cette étape est de faire, à l'aide d'une image docker apache 7.2, un site qui affiche un contenu statique. Dans le docker file on indique qu'on prend une image php avec apache httpd par défaut. On indique que dans cette image on veut copier le contenu du répertoire **/src** dans **/var/www/html**. Ce répertoire contient notre page web par défaut de bootstrap. lors du lancement de du container, on effectue une redirection de sur le port **9090**. 
+Le but de cette étape est de faire, à l'aide d'une image docker apache 7.2, un site qui affiche un contenu statique. Dans le "dockerfile" on indique qu'on prend une image php avec apache httpd par défaut. On indique que dans cette image on veut copier le contenu du répertoire **/src** dans **/var/www/html**. Ce répertoire contient notre page web par défaut de bootstrap. lors du lancement du container, on effectue une redirection sur le port **9090**. 
 
 ```sh
-# content of Dockerfil
+# content of Dockerfile
 # FROM php:7.2-apache
 # COPY src/ /var/www/html/
 docker build -t my-php-app .
@@ -29,17 +29,20 @@ echo "coucou" >index.html
 
 ## Step 2: Dynamic HTTP server with express.js
 
-Le but de cette partie est de générer dynamiquement toute les secondes des valeurs aléatoires. Pour cela nous avons utilisé **express.js** car comme nous étions novice dans le domaine, nous avons préféré rester avec l'outil montrer pas le professeur. Nous n'avons pas eut à changer beaucoup la configuration montrée dans les webcast. si ce n'est qu'on à la manière de docker un hash , avec le nombre jours depuis la création de ce docker, et son nom aléatoire. 
+Le but de cette partie est de générer dynamiquement toute les secondes des valeurs aléatoires. Pour cela nous avons utilisé **express.js** car comme nous étions novice dans le domaine, nous avons préféré rester avec l'outil montrer pas le professeur. Nous n'avons pas eut à changer beaucoup la configuration montrée dans les webcast. Nous avons toutefois généré un contenu différent à celui présenté dans les vidéos. Nous avons donc utilisé **chancejs** pour générer des pseudos informations docker. Nous avons créé un hash , avec le nombre jours depuis la création de ce docker, et son nom aléatoire. Pour cela nous avons utilisé 3 champs différents offert par **chancejs**:
+* hash: génère un hash de 12 caractères
+* entier : génère un nombre entre 1 et 30 et on ajoute le texte " days ago"
+* mot : génère 2 mots de 2 syllabes connecté par un '-'
 
 ![](./img/task2.png)
 
 * You can do a demo, where you build the image, run a container and access content from a browser.
 
 ## Step 3: Reverse proxy with apache (static configuration)
+0
+Dans cette étape, nous devions mettre en place un reverse proxy pour la partie statique et dynamique. Nous avons utilisé la même image que celle du serveur statique. Travaillant sous linux, les images dockers fonctionnent directement sur l'OS et non pas dans une machine virtuel,  le reverse proxy n'est donc pas le seul point d'entrée pour nos containers. Cela vient du fait que notre système fait office d'hôte pour les containers et il n'a pas besoin d'une machine virtuelle. Par contre si on installait notre configuration sur un raspberry pi se trouvant sur notre réseau domestique et qu'on tentait d'y accéder depuis un ordinateur se trouvant sur le même réseau, ce serait le seul point d'entrée. 
 
-Dans cette étape, nous devions mettre en place un reverse proxy pour la partie statique et dynamique. Nous avons utilisé la même image que celle du serveur statique. Contrairement aux personnes qui utilisent des systèmes d'exploitation propriétaires, le reverse proxy n'est pas le seul point d'entrée pour nos containers. Cela vient du fait que notre système fait office d'hôte pour les containers et il n'a pas besoin d'une machine virtuelle. Par contre si on installait notre configuration sur un raspberry pi se trouvant sur notre réseau domestique et qu'on tentait d'y accéder depuis un ordinateur se trouvant sur le même réseau, ce serait le seul point d'entrée. 
-
-Pour faire fonctionner notre RP, nous avons activer les modules proxy et proxy_http et nous les avons activés. Puis dans le script  **apache2-foreground** nous créons dynamiquement la configuration du serveur avec les adresses passées en paramètres avec les variables d'environnement. 
+Pour faire fonctionner notre RP, nous avons activé les modules proxy et proxy_http. Puis dans le script  **apache2-foreground** nous créons dynamiquement la configuration du serveur avec les adresses passées en paramètres avec les variables d'environnement. 
 
 * You can do a demo, where you start from an "empty" Docker environment (no container running) and where you start 3 containers: static server, dynamic server and reverse proxy; in the demo, you prove that the routing is done correctly by the reverse proxy.
 
