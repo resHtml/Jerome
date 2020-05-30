@@ -39,10 +39,9 @@ Le but de cette partie est de générer dynamiquement toute les secondes des val
 * You can do a demo, where you build the image, run a container and access content from a browser.
 
 ## Step 3: Reverse proxy with apache (static configuration)
-0
-Dans cette étape, nous devions mettre en place un reverse proxy pour la partie statique et dynamique. Nous avons utilisé la même image que celle du serveur statique. Travaillant sous linux, les images dockers fonctionnent directement sur l'OS et non pas dans une machine virtuel,  le reverse proxy n'est donc pas le seul point d'entrée pour nos containers. Cela vient du fait que notre système fait office d'hôte pour les containers et il n'a pas besoin d'une machine virtuelle. Par contre si on installait notre configuration sur un raspberry pi se trouvant sur notre réseau domestique et qu'on tentait d'y accéder depuis un ordinateur se trouvant sur le même réseau, ce serait le seul point d'entrée. 
 
-Pour faire fonctionner notre RP, nous avons activé les modules proxy et proxy_http. Puis dans le script  **apache2-foreground** nous créons dynamiquement la configuration du serveur avec les adresses passées en paramètres avec les variables d'environnement. 
+Dans cette étape, nous devions mettre en place un reverse proxy pour la partie statique et dynamique. Nous avons utilisé la même image que celle du serveur statique. Travaillant sous linux, les images dockers fonctionnent directement sur l'OS et non pas dans une machine virtuel,  le reverse proxy n'est donc pas le seul point d'entrée pour nos containers. Cela vient du fait que notre système fait office d'hôte pour les containers et il n'a pas besoin d'une machine virtuelle. Par contre si on installait notre configuration sur un raspberry pi se trouvant sur notre réseau domestique et qu'on tentait d'y accéder depuis un ordinateur se trouvant sur le même réseau, ce serait le seul point d'entrée. 
+Pour faire fonctionner notre RP, nous avons activé les modules proxy et proxy_http. 
 
 * You can do a demo, where you start from an "empty" Docker environment (no container running) and where you start 3 containers: static server, dynamic server and reverse proxy; in the demo, you prove that the routing is done correctly by the reverse proxy.
 
@@ -65,30 +64,34 @@ service apache2 restart
 
 
 
-
 ##  Step 4: AJAX requests with JQuery
 
-### Acceptance criteria
+Dans cette partie du laboratoire, nous avons mis en place avec script dans la page **index.html** qui permet de mettre à jour toutes les secondes une partie de cette dernière. Nous avons choisi l'entête de la page dans notre cas. Sans le RP, cette configuration ne serait pas possible parce que c'est le RP qui route la requête du browser vers le bon serveur. 
 
-* You can do a complete, end-to-end demonstration: the web page is dynamically updated every few seconds (with the data coming from the dynamic backend).
+Dans la partie netword de la page internet on peut voire que c'est bien le browser qui envoie les différentes requêtes. 
 
-* You are able to prove that AJAX requests are sent by the browser and you can show the content of th responses.
-
-  Network part of browser inspect page 
-
-* You are able to explain why your demo would not work without a reverse proxy (because of a security restriction).
-
-  because it's the reverse proxy that route the request from the browser to a dynamic or static 
-
-
-To execute some javascript in index.html, we must include it at the end of the file with the path of the javascript.The script is build as follow: 
+![](/home/jerome/HEIG/Labo/RES/Teaching-HEIGVD-RES-2020-Labo-HTTPInfra/img/task4.png)
 
 ```js
+// à la fin du fichier index.html 
+<script src="vendor/dockers.js"></script>  
+
+// le script appelé à la fin de la page index.html
 $(function(){
-    // declare function
-    	// use module getJSON
-    // function call 
-    // setInterval(function, MS); for a call every MS
+	console.log("loading dockers");
+
+	function loadDockers(){
+		$.getJSON("/api/dynamic/",function(dockers){
+			console.log(dockers);
+			var message = "Nobody is here";
+			if(dockers.length > 0){
+				message = dockers[0].id + " " + dockers[0].created+" "+dockers[0].dockername;
+			}
+			$(".navbar-brand").text(message);
+		});
+	};
+	loadDockers();
+	setInterval(loadDockers, 2000);
 });
 ```
 
@@ -96,7 +99,7 @@ $(function(){
 
 ## Step 5: Dynamic reverse proxy configuration
 
-### Acceptance criteria
+Puis dans le script  **apache2-foreground** nous créons dynamiquement la configuration du serveur avec les adresses passées en paramètres avec les variables d'environnement. 
 
 ```sh
 # add environnement variable to docker image 
@@ -104,9 +107,6 @@ $(function(){
 # overwrite a script call by docker file in the image to use environnement variable 
 ```
 
-The goal is to :
-
-1. run the two docker for static and dynamic
 2. get there adress by using a script and put it a environnement variable 
 3. run the php script and redirect the output in config file 
 
