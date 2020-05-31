@@ -160,11 +160,22 @@ On peut voir ici que nous avons accès au deux serveurs statiques.
 
 ![](/home/jerome/HEIG/Labo/RES/Teaching-HEIGVD-RES-2020-Labo-HTTPInfra/img/task6.png)
 
-## Load balancing: round-robin vs sticky sessions
+## Load balancing:  sticky sessions
 
-* You do a setup to demonstrate the notion of sticky session.
-* You prove that your load balancer can distribute HTTP requests in a round-robin fashion to the dynamic server nodes (because there is no state).
-* You prove that your load balancer can handle sticky sessions when forwarding HTTP requests to the static server nodes.
+Le principe de régulateur de charge avec **sticky session** consiste à rediriger un client toujours vers le même serveur. Ce qui fait que si on va sur le site **demo.res.ch:8080** avec notre navigateur et qu'on est servit par le serveur 1, cela restera "notre serveur". Ce qui n'arriverait pas dans un mode round robin ou chaque serveur serveur appelé tour à tour. Pour faire cela nous avons ajouté, comme pour l'exemple de https://httpd.apache.org/docs/2.4/mod/mod_proxy_balancer.html, le module headers qui permet de modifier les entêtes des requêtes et réponses http. De plus on indique quelle route doit prendre un client avec la session courante. 
+
+Pour tester nous avons utiliser le navigateur firefox de manière normale, qui s'est vu attribué le serveur 1, et firefox en mode privé,qui s'est vu attribué le serveur 2. On peut actualiser la page autant de fois que l'on désire on va rester sur le même serveur. 
+
+```sh
+	Header add Set-Cookie "ROUTEID=.%{BALANCER_WORKER_ROUTE}e; path=/" env=BALANCER_ROUTE_CHANGED
+	<Proxy 'balancer://static'>
+		BalancerMember 'http://<?php print "$ipStatic1"?>' route=1
+		BalancerMember 'http://<?php print "$ipStatic2"?>' route=2
+		ProxySet stickysession=ROUTEID
+	</Proxy>
+```
+
+ 
 
 ## Management UI 
 
