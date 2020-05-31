@@ -38,8 +38,8 @@ Le but de cette partie est de générer dynamiquement toute les secondes des val
 
 ## Step 3: Reverse proxy with apache (static configuration)
 
-Dans cette étape, nous devions mettre en place un reverse proxy pour la partie statique et dynamique. Nous avons utilisé la même image que celle du serveur statique. Travaillant sous linux, les images dockers fonctionnent directement sur l'OS et non pas dans une machine virtuel,  le reverse proxy n'est donc pas le seul point d'entrée pour nos containers. Cela vient du fait que notre système fait office d'hôte pour les containers et il n'a pas besoin d'une machine virtuelle. Par contre si on installait notre configuration sur un raspberry pi se trouvant sur notre réseau domestique et qu'on tentait d'y accéder depuis un ordinateur se trouvant sur le même réseau, ce serait le seul point d'entrée. 
-Pour faire fonctionner notre RP, nous avons activé les modules proxy et proxy_http. Puis nous avons activé la configuration que nous avons créée. Le "problème" de cette configuration est qu'il faut s'assurer que  les adresses codées en dures sont toujours pareilles. 
+Dans cette étape, nous devions mettre en place un reverse proxy pour la partie statique et dynamique. Nous avons utilisé la même image que celle du serveur statique. Travaillant sous linux, les images dockers fonctionnent directement sur l'OS et non pas dans une machine virtuelle,  le reverse proxy n'est donc pas le seul point d'entrée pour nos containers. Cela vient du fait que notre système fait office d'hôte pour les containers et il n'a pas besoin d'une machine virtuelle. Par contre si on installait notre configuration sur un raspberry pi se trouvant sur notre réseau domestique et qu'on tentait d'y accéder depuis un ordinateur se trouvant sur le même réseau, ce serait le seul point d'entrée. 
+Pour faire fonctionner notre RP, nous avons activé les modules proxy et proxy_http. Puis nous avons activé la configuration que nous avons créée. Le "problème" de cette configuration est qu'il faut s'assurer que  les adresses codées en dures soient toujours pareilles. 
 
 * You can do a demo, where you start from an "empty" Docker environment (no container running) and where you start 3 containers: static server, dynamic server and reverse proxy; in the demo, you prove that the routing is done correctly by the reverse proxy.
 
@@ -64,9 +64,9 @@ service apache2 restart
 
 ##  Step 4: AJAX requests with JQuery
 
-Dans cette partie du laboratoire, nous avons mis en place avec script js dans la page **index.html** qui permet de mettre à jour toutes les secondes une partie de cette dernière. En l'occurence, nous avons choisi l'entête de la page dans notre cas. Sans le RP, cette configuration ne serait pas possible parce que c'est le RP qui route la requête du browser vers le bon serveur. 
+Dans cette partie du laboratoire, nous avons mis en place  un script js dans la page **index.html** qui permet de mettre à jour toutes les secondes une partie de cette dernière. En l'occurence, nous avons choisi l'entête de la page dans notre cas. Sans le RP, cette configuration ne serait pas possible parce que c'est le RP qui route la requête du browser vers le bon serveur. 
 
-Dans la partie netword de la page internet on peut voire que c'est bien le browser qui envoie les différentes requêtes. 
+Dans la partie network de la page internet on peut voire que c'est bien le browser qui envoie les différentes requêtes. 
 
 ![](/home/jerome/HEIG/Labo/RES/Teaching-HEIGVD-RES-2020-Labo-HTTPInfra/img/task4.png)
 
@@ -130,7 +130,7 @@ echo "ip_dynamic2 :$DYNAMIC_APP2"
 
 ## Load balancing: multiple server nodes 
 
-Pour exécuter le RP en mode load balancingn nous avons activé les modules **lbmethod_byrequests, status and proxy_balancer**. L'infrastructure de test se constituera de 2 noeuds dynamiques et de 2 noeuds statiques. Nous avons ajouté l'option qui permet de montré la charge des serveurs avec le module status. Cette page est accessible via l'onglet **Load-manager**.  Dans le fichier de config, nous avons avons modifié comme dans le script ci-dessous selon les instructions du site https://httpd.apache.org/docs/2.4/mod/mod_proxy_balancer.htm. 
+Pour exécuter le RP en mode load balancingn nous avons activé les modules **lbmethod_byrequests, status and proxy_balancer**. L'infrastructure de test se constituera de 2 noeuds dynamiques et de 2 noeuds statiques. Nous avons ajouté l'option qui permet de montré la charge des serveurs avec le module status. Cette page est accessible via l'onglet **Load-manager**.  Dans le fichier de config, nous  avons modifié comme dans le script ci-dessous selon les instructions du site https://httpd.apache.org/docs/2.4/mod/mod_proxy_balancer.htm. 
 
 ```sh
 	# ajout des deux membres dynamiques
@@ -168,5 +168,76 @@ On peut voir ici que nous avons accès au deux serveurs statiques.
 
 ## Management UI 
 
-* You develop a web app (e.g. with express.js) that administrators can use to monitor and update your web infrastructure.
-* You find a way to control your Docker environment (list containers, start/stop containers, etc.) from the web app. For instance, you use the Dockerode npm module (or another Docker client library, in any of the supported languages).
+Le management depuis un site web a été réalisé grâce à dockerode. Cet outil permet d'effectuer des appels sur l'API de docker. L'implémentation proposée est un proof of concept avec quelques informations sur les dockers.
+
+## Liste containeurs
+
+La première fonctionalité de ce module est de lister les différents containeurs sur la machine hôte. Dans cette liste on peut y voir le nom de la machine, son adresse ip actuelle (champ vide si éteint), et un bouton permettant de changer l'état de la machine.
+
+Cette liste est disponible via l'url /api/docker
+
+## Changement d'état
+
+La seconde fonctionnalité offerte est la possibilité de changer l'état de la machine, (on-> off, off->on). Une fois le containeur a changé d'état(cela peut prendre plusieurs secondes) la page web se met à jour. Pour accéder à cette machine, le champ [stop/start] est un lien ayant comme id le hash du docker. 
+
+Cette action est disponible via l'url `/api/docker/:uid`, ou uid est le hash.
+
+## Intégration
+
+Pour intégrer le management UI dans le projet, il a fallu modifier, les règles du reverse proxy ainsi qu'adapter les contenus des containeurs express et statique. Il a également fallu modifier le script de build des images
+
+### Modfication apache statique
+
+index.html
+
+* Ajout d'une `<table id="dataTable">`. Cette table recevra la liste des différents dockers présent.
+* Ajout d'une inclusion de script `<script src="vendor/dockerMain.js"></script>`
+
+Ajout d'un fichier `vendor/dockerMain.js`
+
+* fonction dockerMain qui est appelé une fois jquery initialisé. Cette fonction accède à l'url `/api/docker` et met en passe 
+* Action sur le clic d'un lien(on-off) : accède à l'url `/api/docker/:uid`. Une fois que le serveur envoi un succès(asyncrone), appele la fonction dockerMain.
+
+### Modification express
+
+Ajoute de deux routes dans la gestion d'express:
+
+* `/api/docker/`: retourne tous les containeurs sur la machine
+* `/api/docker/:uid`: envoie un signal au containeur de changer d'état. Une fois le changement effectuer(peut prendre plusieurs secondes), envoi au client une chaine vide pour que le client puisse continuer son process
+
+### Règles reverse proxy
+
+Ajout de la route `/api/docker/ ` vers les serveurs nodejs. Gère également `/api/docker/:uid`
+
+```
+ProxyPass '/api/docker/' 'balancer://dynamic/api/docker/'
+ProxyPass '/api/docker/' 'balancer://dynamic/api/docker/'
+```
+
+### Modification script build
+
+Pour avoir accès aux informations des dockers au sein d'un docker, il a fallu monter dans la vm le socket docker
+
+```
+docker run -v /var/run/docker.sock:/var/run/docker.sock -d --name express1 res/express
+```
+
+
+
+
+
+## Vérification du système
+
+La vérification a été de comparer le contenu du tableau sur la page web et les informations de `docker ps -a`
+
+Tous les containeurs sont allumés sauf static1
+
+![](img/dockerps.png)
+
+Tous les containeurs sont Up sauf serene_borg et static1 
+
+![](img/moreContaineurs.png)
+
+## Problèmes connus
+
+Le système ne vérifie pas si le containeur à arreter est utile ou non. Il est tout a fait possible d'arreter le reverse proxy ou tous les containeurs présentant le site web, dés lors il n'y a plus de feedback mais l'action demandée à bien été effectué. Pour le vérifier `docker ps`
