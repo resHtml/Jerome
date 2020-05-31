@@ -124,7 +124,7 @@ echo "ip_dynamic2 :$DYNAMIC_APP2"
 
 ## Load balancing: multiple server nodes 
 
-Pour exécuter le RP en mode load balancingn nous avons activé les modules **lbmethod_byrequests, status and proxy_balancer**. L'infrastructure de test se constituera de 2 noeuds dynamiques et de 2 noeuds statiques. Nous avons ajouté l'option qui permet de montrer la charge des serveurs avec le module status. Cette page est accessible via l'onglet **Load-manager**.  Dans le fichier de config, nous  avons modifié comme dans le script ci-dessous selon les instructions du site https://httpd.apache.org/docs/2.4/mod/mod_proxy_balancer.htm. 
+Pour exécuter le RP en mode load balancing nous avons activé les modules **lbmethod_byrequests, status and proxy_balancer**. L'infrastructure de test se constituera de 2 noeuds dynamiques et de 2 noeuds statiques. Nous avons ajouté l'option qui permet de montrer la charge des serveurs avec le module status. Cette page est accessible via l'onglet **Load-manager**.  Dans le fichier de config, nous  avons modifié comme dans le script ci-dessous selon les instructions du site https://httpd.apache.org/docs/2.4/mod/mod_proxy_balancer.htm. 
 
 ```sh
 	# ajout des deux membres dynamiques
@@ -156,7 +156,7 @@ On peut voir ici que nous avons accès au deux serveurs statiques.
 
 ## Load balancing:  sticky sessions
 
-Le principe de régulateur de charge avec **sticky session** consiste à rediriger un client toujours vers le même serveur. Ce qui fait que si on va sur le site **demo.res.ch:8080** avec notre navigateur et qu'on est servi par le serveur 1, cela restera "notre serveur". Ce qui n'arriverait pas dans un mode round robin ou chaque serveur appelé tour à tour. Pour faire cela nous avons ajouté, comme pour l'exemple de https://httpd.apache.org/docs/2.4/mod/mod_proxy_balancer.html, le module headers qui permet de modifier les entêtes des requêtes et réponses http. De plus on indique quelle route doit prendre un client avec la session courante. 
+Le principe de régulateur de charge avec **sticky session** consiste à rediriger un client toujours vers le même serveur. Ce qui fait que si on va sur le site **demo.res.ch:8080** avec notre navigateur et qu'on est servi par le serveur 1, cela restera "notre serveur". Ce qui n'arriverait pas dans un mode round robin ou chaque serveur est appelé tour à tour. Pour faire cela nous avons ajouté, comme pour l'exemple de https://httpd.apache.org/docs/2.4/mod/mod_proxy_balancer.html, le module headers qui permet de modifier les entêtes des requêtes et réponses http. De plus on indique quelle route doit prendre un client avec la session courante. 
 
 Pour tester nous avons utilisé le navigateur firefox de manière normale, qui s'est vu attribuer le serveur 1, et firefox en mode privé, qui s'est vu attribuer le serveur 2. On peut actualiser la page autant de fois que l'on désire on va rester sur le même serveur. 
 
