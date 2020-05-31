@@ -1,7 +1,7 @@
 # Teaching-HEIGVD-RES-2020-Labo-HTTPInfra
 
-- Quentin Saucy
-- Jérôme Arn
+>- Quentin Saucy
+>- Jérôme Arn
 
 ## Step 1: Static HTTP server with apache httpd
 
@@ -36,12 +36,10 @@ Le but de cette partie est de générer dynamiquement toute les secondes des val
 
 ![](./img/task2.png)
 
-* You can do a demo, where you build the image, run a container and access content from a browser.
-
 ## Step 3: Reverse proxy with apache (static configuration)
 
 Dans cette étape, nous devions mettre en place un reverse proxy pour la partie statique et dynamique. Nous avons utilisé la même image que celle du serveur statique. Travaillant sous linux, les images dockers fonctionnent directement sur l'OS et non pas dans une machine virtuel,  le reverse proxy n'est donc pas le seul point d'entrée pour nos containers. Cela vient du fait que notre système fait office d'hôte pour les containers et il n'a pas besoin d'une machine virtuelle. Par contre si on installait notre configuration sur un raspberry pi se trouvant sur notre réseau domestique et qu'on tentait d'y accéder depuis un ordinateur se trouvant sur le même réseau, ce serait le seul point d'entrée. 
-Pour faire fonctionner notre RP, nous avons activé les modules proxy et proxy_http. 
+Pour faire fonctionner notre RP, nous avons activé les modules proxy et proxy_http. Puis nous avons activé la configuration que nous avons créée. Le "problème" de cette configuration est qu'il faut s'assurer que  les adresses codées en dures sont toujours pareilles. 
 
 * You can do a demo, where you start from an "empty" Docker environment (no container running) and where you start 3 containers: static server, dynamic server and reverse proxy; in the demo, you prove that the routing is done correctly by the reverse proxy.
 
@@ -52,7 +50,7 @@ Pour faire fonctionner notre RP, nous avons activé les modules proxy et proxy_h
 
 ### configuration 
 
-In the reverse proxy we create a configuration file for our reverse proxy for the static and dynamique page. We can find the configuration file in `/etc/apache2/sites-available`. 
+Dans le Rp nous avons créé une configuration pour redirigé l'utilisateur en fonction du chemin qu'il entre dans le navigateur. On peut trouver cette configuration dans `/etc/apache2/sites-available`. 
 
 ```sh
 a2enmod proxy
@@ -66,7 +64,7 @@ service apache2 restart
 
 ##  Step 4: AJAX requests with JQuery
 
-Dans cette partie du laboratoire, nous avons mis en place avec script dans la page **index.html** qui permet de mettre à jour toutes les secondes une partie de cette dernière. Nous avons choisi l'entête de la page dans notre cas. Sans le RP, cette configuration ne serait pas possible parce que c'est le RP qui route la requête du browser vers le bon serveur. 
+Dans cette partie du laboratoire, nous avons mis en place avec script js dans la page **index.html** qui permet de mettre à jour toutes les secondes une partie de cette dernière. En l'occurence, nous avons choisi l'entête de la page dans notre cas. Sans le RP, cette configuration ne serait pas possible parce que c'est le RP qui route la requête du browser vers le bon serveur. 
 
 Dans la partie netword de la page internet on peut voire que c'est bien le browser qui envoie les différentes requêtes. 
 
@@ -99,21 +97,38 @@ $(function(){
 
 ## Step 5: Dynamic reverse proxy configuration
 
-Puis dans le script  **apache2-foreground** nous créons dynamiquement la configuration du serveur avec les adresses passées en paramètres avec les variables d'environnement. 
+Nous avons repris notre configuration existante de RP et nous  y avons fait les changements suivant :
+
+- le fichier de configuration sera généré par un script php 
+- Nous utilisons des variables d'environement pour stocker les adresses et ainsi les passés en argument de la commande `docker run` 
+- Modifié le script de lancement des docker. 
+
+Puis dans le script  **apache2-foreground** nous créons dynamiquement la configuration du serveur avec les adresses passées en paramètres avec les variables d'environnement. Dans le script php, nous récupérons les variables d'environnement transmises par le script ci-desous, pour produire un fichier de configuration dynamique pour le RP. 
 
 ```sh
-# add environnement variable to docker image 
- docker run -e HELLO=world -e RES=heig -it res/apache_rp /bin/bash
-# overwrite a script call by docker file in the image to use environnement variable 
+docker build -t res/apache_rp ./apache-reverse-proxy 
+docker build -t res/apache_static-s1 ./apache-static-S1   
+docker build -t res/apache_static-s2 ./apache-static-S2   
+docker build --no-cache -t res/express ./express-images
+
+docker run -d --name static1 res/apache_static-s1
+export STATIC_APP1=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' static1)":80"
+echo "ip_static1: $STATIC_APP1"
+
+docker run -d --name static2 res/apache_static-s2
+export STATIC_APP2=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' static2)":80"
+echo "ip_static2: $STATIC_APP2"
+
+docker run -v /var/run/docker.sock:/var/run/docker.sock -d --name express1 res/express
+export DYNAMIC_APP1=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' express1)":3000"
+echo "ip_dynamic1 :$DYNAMIC_APP1"
+
+docker run -v /var/run/docker.sock:/var/run/docker.sock -d --name express2 res/express
+export DYNAMIC_APP2=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' express2)":3000"
+echo "ip_dynamic2 :$DYNAMIC_APP2"
 ```
 
-2. get there adress by using a script and put it a environnement variable 
-3. run the php script and redirect the output in config file 
-
-* You have found a way to replace the static configuration of the reverse proxy (hard-coded IP adresses) with a dynamic configuration.
-* You may use the approach presented in the webcast (environment variables and PHP script executed when the reverse proxy container is started), or you may use another approach. The requirement is that you should not have to rebuild the reverse proxy Docker image when the IP addresses of the servers change.
-* You are able to do an end-to-end demo with a well-prepared scenario. Make sure that you can demonstrate that everything works fine when the IP addresses change!
-* You are able to explain how you have implemented the solution and walk us through the configuration and the code.
+* You are able to do an end-to-end demo with a well-prepared scenario. Make sure that you can demonstrate that everything works fine when the IP addresses change
 
 ## Load balancing: multiple server nodes (0.5pt)
 
