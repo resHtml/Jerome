@@ -144,6 +144,7 @@ Pour exécuter le RP en mode load balancingn nous avons activé les modules **lb
 		BalancerMember 'http://<?php print "$ipDynamic1"?>' route=1
 		BalancerMember 'http://<?php print "$ipDynamic2"?>' route=2
 	</Proxy>
+	
 	# configuration de la page load balancer. 
     <Location '/balancer-manager'>
         ProxyPass !
