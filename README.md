@@ -103,7 +103,7 @@ Nous avons repris notre configuration existante de RP et nous  y avons fait les 
 - Nous utilisons des variables d'environement pour stocker les adresses et ainsi les passés en argument de la commande `docker run` 
 - Modifié le script de lancement des docker. 
 
-Puis dans le script  **apache2-foreground** nous créons dynamiquement la configuration du serveur avec les adresses passées en paramètres avec les variables d'environnement. Dans le script php, nous récupérons les variables d'environnement transmises par le script ci-desous, pour produire un fichier de configuration dynamique pour le RP. 
+Puis dans le script  **apache2-foreground** nous créons dynamiquement la configuration du serveur avec les adresses passées en paramètres avec les variables d'environnement. Dans le script php, nous récupérons les variables d'environnement transmises par le script ci-desous, pour produire un fichier de configuration dynamique pour le RP.  Dans le script suivant nous reconstruisons les images à chaque fois dans le cas où nous aurions fait une modification, ceci afin de s'éviter des surprises lors de nos tests. 
 
 ```sh
 docker build -t res/apache_rp ./apache-reverse-proxy 
@@ -128,24 +128,44 @@ export DYNAMIC_APP2=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.I
 echo "ip_dynamic2 :$DYNAMIC_APP2"
 ```
 
-* You are able to do an end-to-end demo with a well-prepared scenario. Make sure that you can demonstrate that everything works fine when the IP addresses change
+## Load balancing: multiple server nodes 
 
-## Load balancing: multiple server nodes (0.5pt)
+Pour exécuter le RP en mode load balancingn nous avons activé les modules **lbmethod_byrequests, status and proxy_balancer**. L'infrastructure de test se constituera de 2 noeuds dynamiques et de 2 noeuds statiques. Nous avons ajouté l'option qui permet de montré la charge des serveurs avec le module status. Cette page est accessible via l'onglet **Load-manager**.  Dans le fichier de config, nous avons avons modifié comme dans le script ci-dessous selon les instructions du site https://httpd.apache.org/docs/2.4/mod/mod_proxy_balancer.htm. 
 
-* You show that you can have **multiple static server nodes** and **multiple dynamic server nodes**. 
-* You prove that the **load balancer** can distribute HTTP requests between these nodes.
+```sh
+	# ajout des deux membres dynamiques
+	<Proxy 'balancer://static'>
+		BalancerMember 'http://<?php print "$ipStatic1"?>' route=1
+		BalancerMember 'http://<?php print "$ipStatic2"?>' route=2
+	</Proxy>
+	
+	# ajout des deux membres statiques
+	<Proxy 'balancer://dynamic'>
+		BalancerMember 'http://<?php print "$ipDynamic1"?>' route=1
+		BalancerMember 'http://<?php print "$ipDynamic2"?>' route=2
+	</Proxy>
+	# configuration de la page load balancer. 
+    <Location '/balancer-manager'>
+        ProxyPass !
 
-To execute the load balancing byrequest on apache. To do that, i have enable the following modules **lbmethod_byrequests and proxy_balancer**. The infrastructure will be made of 2 statics servers and 2 dynamics servers. First with my building script I run these 4 servers and i catch the 4 Ip adress in environnement variables. And I give these varaiables when i run the reverse proxy container. 
+        SetHandler balancer-manager
+        # Require host demo.res.ch
+        # Order Deny,Allow
+        # Allow from all 
+    </Location>
+```
 
-In the template for configuration of the reverse proxy, I have made the modifications that was given on https://httpd.apache.org/docs/2.4/mod/mod_proxy_balancer.html . 
+On peut voir ici que nous avons accès au deux serveurs statiques. 
 
-## Load balancing: round-robin vs sticky sessions (0.5 pt)
+![](/home/jerome/HEIG/Labo/RES/Teaching-HEIGVD-RES-2020-Labo-HTTPInfra/img/task6.png)
+
+## Load balancing: round-robin vs sticky sessions
 
 * You do a setup to demonstrate the notion of sticky session.
 * You prove that your load balancer can distribute HTTP requests in a round-robin fashion to the dynamic server nodes (because there is no state).
 * You prove that your load balancer can handle sticky sessions when forwarding HTTP requests to the static server nodes.
 
-## Management UI (0.5 pt)
+## Management UI 
 
 * You develop a web app (e.g. with express.js) that administrators can use to monitor and update your web infrastructure.
 * You find a way to control your Docker environment (list containers, start/stop containers, etc.) from the web app. For instance, you use the Dockerode npm module (or another Docker client library, in any of the supported languages).
